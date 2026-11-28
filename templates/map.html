@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Destination map - StudyFinder{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="display fs-2">Destination map</h1>
+  <p class="text-muted">Choose the country you are from and the country you want to study in. The route is drawn on the map.</p>
+
+  <div class="panel mb-4">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label" for="fromCountry"><span class="legend-dot" style="background:#e8a33d"></span>I am from</label>
+        <select id="fromCountry" class="form-select" data-value="{{ home_country }}"><option value="">Select country</option></select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label" for="toCountry"><span class="legend-dot" style="background:var(--primary)"></span>I want to study in</label>
+        <select id="toCountry" class="form-select" data-value="{{ target }}"><option value="">Select country</option></select>
+      </div>
+      <div class="col-md-2 d-grid"><button id="swapBtn" type="button" class="btn btn-outline-brand"><i class="bi bi-arrow-left-right me-2"></i>Swap</button></div>
+    </div>
+  </div>
+  {% include "_map.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Search results - StudyFinder{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="container">
+    <h1>{{ total }} {{ 'opportunity' if total == 1 else 'opportunities' }}{% if args.get('q') %} for "{{ args.q }}"{% endif %}</h1>
+    <nav class="seg" aria-label="Opportunity type">
+      <a href="{{ url_for('search', **tab_args) }}" class="{{ 'active' if not args.get('type') }}">All <small>({{ type_counts.values()|sum }})</small></a>
+      {% for key, label in [('programme','Programmes'), ('scholarship','Scholarships'), ('research','Research')] %}
+        <a href="{{ url_for('search', type=key, **tab_args) }}" class="{{ 'active' if args.get('type') == key }}">{{ label }} <small>({{ type_counts.get(key, 0) }})</small></a>
+      {% endfor %}
+    </nav>
+  </div>
+</div>
+
+<div class="container py-4">
+<div class="row">
+  <div class="col-md-3 mb-3">
+    <button class="btn btn-outline-brand w-100 d-md-none mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-controls="filters"><i class="bi bi-sliders me-2"></i>Filters</button>
+    <div class="collapse d-md-block filter-sticky" id="filters">
+      <form method="get" action="{{ url_for('search') }}" class="filter-card" data-autosubmit>
+        <h2 class="display">Refine results</h2>
+        <input type="hidden" name="type" value="{{ args.get('type', '') }}">
+
+        <div class="mb-3">
+          <label class="form-label">Keyword</label>
+          <input type="text" name="q" class="form-control" value="{{ args.get('q', '') }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Degree</label>
+          <select name="degree" class="form-select">
+            <option value="">All</option>
+            {% for d in ['Masters', 'PhD'] %}<option value="{{ d }}" {{ 'selected' if args.get('degree') == d }}>{{ d }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Country</label>
+          <select name="country" class="form-select">
+            <option value="">All countries</option>
+            {% for c, n in countries|sort %}<option value="{{ c }}" {{ 'selected' if args.get('country') == c }}>{{ c }} ({{ n }})</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Subject</label>
+          <select name="subject" class="form-select">
+            <option value="">All subjects</option>
+            {% for s, n in subjects|sort %}<option value="{{ s }}" {{ 'selected' if args.get('subject') == s }}>{{ s }} ({{ n }})</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Funding</label>
+          <select name="funding" class="form-select">
+            <option value="">Any</option>
+            {% for f in ['Full', 'Partial', 'Tuition waiver', 'Stipend', 'None'] %}
+              <option value="{{ f }}" {{ 'selected' if args.get('funding') == f }}>{{ f }} ({{ fundings.get(f, 0) }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" name="open_only" value="1" id="open_only" {{ 'checked' if args.get('open_only') }}>
+          <label class="form-check-label" for="open_only">Deadline not passed</label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Sort by</label>
+          <select name="sort" class="form-select">
+            <option value="deadline" {{ 'selected' if args.get('sort') == 'deadline' }}>Nearest deadline</option>
+            <option value="title" {{ 'selected' if args.get('sort') == 'title' }}>Title A-Z</option>
+            <option value="newest" {{ 'selected' if args.get('sort') == 'newest' }}>Recently added</option>
+          </select>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-brand flex-grow-1">Apply filters</button>
+          <a href="{{ url_for('search') }}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-9">
+    {% set labels = {'q': 'Keyword', 'degree': 'Degree', 'country': 'Country', 'subject': 'Subject', 'funding': 'Funding', 'open_only': 'Open only'} %}
+    {% if args.get('q') or args.get('degree') or args.get('country') or args.get('subject') or args.get('funding') or args.get('open_only') %}
+    <div class="active-filters">
+      {% for key, label in labels.items() %}{% if args.get(key) %}
+        {% set rest = args.copy() %}{% set _ = rest.pop(key) %}
+        <a class="chip-filter" href="{{ url_for('search', **rest) }}" aria-label="Remove filter {{ label }}">{{ label }}: {{ 'Deadline not passed' if key == 'open_only' else args[key] }}<i class="bi bi-x-lg"></i></a>
+      {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+    {% for o in results %}{% include "_card.html" %}
+    {% else %}
+      <div class="empty-state"><span class="kind-ic"><i class="bi bi-search"></i></span><h2 class="h4">Nothing matches those filters</h2><p class="text-muted mb-0">Remove a filter or try a different keyword.</p></div>
+    {% endfor %}
+
+    {% if total_pages > 1 %}
+    <nav aria-label="Pages"><ul class="pagination justify-content-center mt-4">
+      <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link" href="{{ url_for('search', page=page-1, **args) }}">Previous</a></li>
+      {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {{ 'active' if p == page }}"><a class="page-link" href="{{ url_for('search', page=p, **args) }}">{{ p }}</a></li>
+      {% endfor %}
+      <li class="page-item {{ 'disabled' if page == total_pages }}"><a class="page-link" href="{{ url_for('search', page=page+1, **args) }}">Next</a></li>
+    </ul></nav>
+    {% endif %}
+  </div>
+</div>
+</div>
+{% endblock %}

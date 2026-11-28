@@ -1,0 +1,14 @@
+{# Small inline flag. Import with context: {% from "_flag.html" import flag with context %} #}
+{% macro flag(country, w=20) -%}
+{%- set u = flag_url(country, w * 2) -%}
+{%- if u %}<img class="flag" src="{{ u }}" srcset="{{ flag_url(country, w * 2) }} 1x, {{ flag_url(country, w * 4) }} 2x" height="16" alt="" loading="lazy">{% endif -%}
+{%- endmacro %}
+
+{# Cover layers: flag + tint, photo (filled by static/app.js when not known), initials, flag badge #}
+{% macro cover_layers(cv, country) -%}
+<span class="cover-flag" {% if cv.flag %}style="background-image:url('{{ cv.flag }}')"{% endif %}></span>
+<img class="cover-photo{{ ' is-loaded' if cv.image or cv.official }}" alt="" loading="lazy" decoding="async" {% if cv.image or cv.official %}src="{{ cv.image or cv.official }}"{% endif %}>
+<span class="crest">{{ cv.initials }}</span>
+{% if cv.flag_small %}<img class="flag-badge" src="{{ cv.flag_small }}" alt="Flag of {{ country }}">{% endif %}
+<span class="cover-credit" hidden></span>
+{%- endmacro %}

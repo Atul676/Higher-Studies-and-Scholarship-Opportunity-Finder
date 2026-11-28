@@ -1,0 +1,22 @@
+{# Map canvas for the destination page.
+   The page must have <select id="fromCountry"> and <select id="toCountry"> and pass "counts". #}
+<div class="map-wrap">
+  <div id="mapLoading" class="map-msg">Loading map...</div>
+  <svg id="worldMap" viewBox="0 0 960 500" role="img" aria-label="World map with a route between two countries"></svg>
+  <div class="zoom-ctl">
+    <button type="button" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+    <button type="button" id="zoomOut" title="Zoom out" aria-label="Zoom out">&minus;</button>
+    <button type="button" id="zoomFit" title="Zoom to route" aria-label="Zoom to route"><i class="bi bi-bullseye"></i></button>
+    <button type="button" id="zoomReset" title="Reset view" aria-label="Reset view"><i class="bi bi-arrows-fullscreen"></i></button>
+  </div>
+  <div class="map-hint">Drag to move. Ctrl + scroll to zoom. Click a country to select it.</div>
+  <div id="mapTip" class="map-tip" hidden></div>
+</div>
+<div id="routeInfo" class="panel mt-3" hidden></div>
+
+<script>
+  window.MAP_DATA = { counts: {{ counts|tojson }}, searchUrl: "{{ url_for('search') }}", flags: {{ flags|tojson }} };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="{{ url_for('static', filename='map.js') }}"></script>

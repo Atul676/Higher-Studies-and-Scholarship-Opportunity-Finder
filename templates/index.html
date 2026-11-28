@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% from "_flag.html" import flag with context %}
+{% block title %}StudyFinder - Postgraduate programmes and scholarships{% endblock %}
+
+{% block content %}
+{% set months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
+<div class="container">
+
+  <section class="hero-stage">
+    <div class="hero-grid">
+      <div>
+        <span class="pill-note" data-rise style="--i:0"><span class="dot"></span>Listings updated {{ data_updated }}</span>
+        <h1 data-rise style="--i:1">Find the programme, scholarship or research post that fits you</h1>
+        <p class="lede mb-0" data-rise style="--i:2">Listings link to official websites and show funding, eligibility requirements, and deadlines.</p>
+
+        <form action="{{ url_for('search') }}" method="get" class="search-pill" role="search" data-rise style="--i:3">
+          <label class="sp-field"><span>Keyword</span><input type="text" name="q" placeholder="Subject or university" autocomplete="off" data-search-focus></label>
+          <label class="sp-field"><span>Degree</span>
+            <select name="degree"><option value="">Any degree</option><option>Masters</option><option>PhD</option></select>
+          </label>
+          <label class="sp-field"><span>Country</span>
+            <select name="country">
+              <option value="">Any country</option>
+              {% for c, n in countries|sort %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+            </select>
+          </label>
+          <button class="btn btn-accent sp-go" type="submit"><i class="bi bi-search"></i>Search</button>
+        </form>
+        <div class="hero-links" data-rise style="--i:4">Popular:
+          {% for c, n in countries[:4] %}<a href="{{ url_for('search', country=c) }}">{{ flag(c) }}{{ c }}</a>{% endfor %}
+        </div>
+        <div class="hero-stats" data-rise style="--i:5">
+          <div class="stat"><b data-count="{{ total }}">{{ total }}</b>listings</div>
+          <div class="stat"><b data-count="{{ countries|length }}">{{ countries|length }}</b>destinations</div>
+          <div class="stat"><b data-count="{{ type_counts.get('scholarship', 0) }}">{{ type_counts.get('scholarship', 0) }}</b>scholarships</div>
+        </div>
+      </div>
+
+      <div class="globe-wrap is-empty" id="globeWrap" data-rise style="--i:2" aria-label="Interactive globe. Drag to rotate, click a highlighted country to see its listings.">
+        <canvas id="globe" role="img" aria-label="Globe with flight routes from India to study destinations"></canvas>
+        <div class="globe-tip" id="globeTip" hidden></div>
+        <div class="globe-hint">Drag to spin. Click a gold country.</div>
+      </div>
+    </div>
+  </section>
+
+  {% if closing %}
+  <section class="section">
+    <div class="board" data-reveal>
+      <div class="board-head"><h2>Next deadlines</h2><a href="{{ url_for('search', open_only=1, sort='deadline') }}">All open listings</a></div>
+      {% for o in closing %}
+        {% set d = o.deadline.split('-') %}
+        {% set n = days_left(o.deadline) %}
+        <a class="board-row" href="{{ url_for('detail', opp_id=o.id) }}" data-reveal style="--d: {{ loop.index }}">
+          <span class="board-date"><b>{{ d[2] }}</b><small>{{ months[d[1]|int] }} {{ d[0] }}</small></span>
+          <span><span class="board-title">{{ o.title }}</span><span class="board-meta">{{ flag(o.country) }}{{ o.institution }}, {{ o.country }}</span></span>
+          <span class="board-left">{{ 'Today' if n == 0 else (n ~ (' day' if n == 1 else ' days') ~ ' left') }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="section">
+    <div class="section-head" data-reveal><h2>What kind of opportunity?</h2></div>
+    <div class="row g-3">
+      {% for key, label, text, icon, tint in [
+        ('programme', 'Programmes', 'Master\'s and postgraduate courses at universities.', 'bi-mortarboard', 'var(--primary-50);color:var(--primary)'),
+        ('scholarship', 'Scholarships', 'Funding for tuition, living costs, or both.', 'bi-award', 'var(--marigold-50);color:var(--marigold-ink)'),
+        ('research', 'Research positions', 'Funded PhD and research roles with a monthly stipend.', 'bi-lightbulb', 'var(--lagoon-50);color:var(--lagoon)')] %}
+      <div class="col-md-4" data-reveal style="--d: {{ loop.index0 }}">
+        <a href="{{ url_for('search', type=key) }}" class="kind-card">
+          <span class="kind-ic" style="background:{{ tint }}"><i class="bi {{ icon }}"></i></span>
+          <h3>{{ label }}</h3>
+          <p>{{ text }}</p>
+          <span class="chip chip-{{ key }}">{{ type_counts.get(key, 0) }} listed</span>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head" data-reveal><h2>Study destinations</h2><a href="{{ url_for('study_map') }}">See them on the map</a></div>
+    <div class="row g-3">
+      {% for c, n in countries[:8] %}
+      <div class="col-6 col-md-3" data-reveal style="--d: {{ loop.index0 }}">
+        <a class="dest-tile" {% if flag_url(c, 640) %}style="background-image:url('{{ flag_url(c, 640) }}')"{% endif %} href="{{ url_for('search', country=c) }}">
+          {% if flag_url(c, 80) %}<img class="flag-round" src="{{ flag_url(c, 80) }}" alt="" loading="lazy">{% endif %}
+          <span class="go"><i class="bi bi-arrow-up-right"></i></span>
+          <div class="name">{{ c }}</div><div class="n">{{ n }} listing{{ '' if n == 1 else 's' }}</div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head" data-reveal><h2>Study by subject</h2></div>
+    <div class="pill-wrap" data-reveal>
+      {% for s, n in subjects %}<a class="pill-link" href="{{ url_for('search', subject=s) }}">{{ s }}<small>{{ n }}</small></a>{% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="cta-band" data-reveal>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="kind-ic"><i class="bi bi-airplane"></i></span>
+        <div>
+          <h2 class="mb-1">Where are you flying from, and to?</h2>
+          <p class="mb-0 text-muted">Pick your home country and the country you want to study in. The map draws the route and shows how many listings we have there.</p>
+        </div>
+      </div>
+      <a class="btn btn-brand" href="{{ url_for('study_map') }}">Open the map</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head" data-reveal><h2>How to use this site</h2></div>
+    <ol class="steps">
+      <li data-reveal><strong>Search and filter</strong>Narrow the list by degree, country, subject, funding type and deadline.</li>
+      <li data-reveal style="--d: 1"><strong>Compare opportunities</strong>Review each listing's degree, funding, eligibility requirements, and deadline.</li>
+      <li data-reveal style="--d: 2"><strong>Apply on the official site</strong>Every listing links to the university or scholarship website, which has the final word.</li>
+    </ol>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.GLOBE_DATA = { counts: {{ counts_by_country|tojson }}, flags: {{ flags|tojson }}, searchUrl: "{{ url_for('search') }}", origin: "India" };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="{{ url_for('static', filename='globe.js') }}"></script>
+{% endblock %}

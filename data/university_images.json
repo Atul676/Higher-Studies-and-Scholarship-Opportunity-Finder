@@ -1,0 +1,16 @@
+{
+  "UK Government (FCDO)": {"image": "", "wiki": "Foreign, Commonwealth & Development Office"},
+  "DAAD": {"image": "", "wiki": "German Academic Exchange Service"},
+  "European Union": {"image": "", "wiki": "Erasmus Programme"},
+  "Commonwealth Scholarship Commission": {"image": "", "wiki": "Commonwealth Scholarship Commission in the United Kingdom"},
+  "Swedish Institute": {"image": "", "wiki": "Swedish Institute"},
+  "University of Cambridge": {"image": "", "wiki": "University of Cambridge"},
+  "Australian Government": {"image": "", "wiki": "Australia Awards"},
+  "Stanford University": {"image": "", "wiki": "Stanford University"},
+  "Technical University of Munich": {"image": "", "wiki": "Technical University of Munich"},
+  "ETH Zurich": {"image": "", "wiki": "ETH Zurich"},
+  "University of Edinburgh": {"image": "", "wiki": "University of Edinburgh"},
+  "University of Toronto": {"image": "", "wiki": "University of Toronto"},
+  "Example University Lab": {"image": "", "wiki": ""},
+  "Example Research Institute": {"image": "", "wiki": ""}
+}

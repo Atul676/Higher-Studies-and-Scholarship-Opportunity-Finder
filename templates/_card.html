@@ -1,0 +1,49 @@
+{# One listing card (boarding-pass layout). Use: {% include "_card.html" %} with a variable called "o" #}
+{% from "_flag.html" import flag, cover_layers with context %}
+{% set cv = cover_for(o.institution, o.official_url, o.country) %}
+{% set desc, is_sample = describe(o.description) %}
+{% set left = days_left(o.deadline) %}
+<article class="opp-card" data-reveal>
+  <a href="{{ url_for('detail', opp_id=o.id) }}" class="cover opp-cover{{ ' has-photo' if cv.image or cv.official }}" aria-label="{{ o.institution }}" tabindex="-1"
+     style="--h: {{ cv.hue }}" data-cover data-wiki="{{ cv.wiki }}" data-site="{{ cv.site }}">
+    {{ cover_layers(cv, o.country) }}
+  </a>
+
+  <div class="opp-body">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div class="inst-name">{{ o.institution }}</div>
+      <div class="d-flex gap-1 flex-shrink-0">
+        <span class="chip chip-{{ o.type }}">{{ o.type }}</span>
+      </div>
+    </div>
+    <h3 class="opp-title"><a href="{{ url_for('detail', opp_id=o.id) }}">{{ o.title }}</a></h3>
+    <div class="opp-loc">{{ flag(o.country) }}{{ o.country }}</div>
+
+    <div class="facts-row">
+      <div><span>Degree</span><b>{{ o.degree_level }}</b></div>
+      <div><span>Subject</span><b>{{ o.subject }}</b></div>
+      <div><span>Funding</span><b>{{ o.funding_type }}</b></div>
+    </div>
+
+    <p class="opp-desc">{{ desc }}</p>
+
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <a href="{{ url_for('detail', opp_id=o.id) }}" class="btn btn-brand btn-sm px-3">View details</a>
+      <a href="{{ o.official_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-brand btn-sm px-3">Official website<i class="bi bi-box-arrow-up-right ms-2"></i></a>
+      {% if is_sample %}<span class="chip chip-sample ms-auto" title="Placeholder entry. Check the official website.">Sample entry</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="opp-stub">
+    {% if o.deadline %}
+      {% set d = o.deadline.split('-') %}
+      <div class="stub-date"><small>Deadline</small><b>{{ d[2] }}</b><small>{{ ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d[1]|int] }} {{ d[0] }}</small></div>
+      {% if left is not none and left < 0 %}<span class="chip chip-expired">Closed</span>
+      {% elif left is not none and left <= 60 %}<span class="chip chip-closing"><i class="bi bi-clock"></i>{{ left }} days left</span>
+      {% else %}<span class="stub-label">{{ left }} days left</span>{% endif %}
+    {% else %}
+      <div class="stub-date"><small>Deadline</small><b>-</b><small>Not given</small></div>
+    {% endif %}
+    <div class="stub-country">{{ flag(o.country) }}{{ o.country }}</div>
+  </div>
+</article>

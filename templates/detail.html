@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ opp.title }} - StudyFinder{% endblock %}
+
+{% from "_flag.html" import flag, cover_layers with context %}
+{% block content %}
+{% set cv = cover_for(opp.institution, opp.official_url, opp.country) %}
+{% set desc, is_sample = describe(opp.description) %}
+{% set left = days_left(opp.deadline) %}
+<div class="container py-4">
+  <nav class="crumbs mb-3" aria-label="Breadcrumb"><a href="{{ url_for('home') }}">Home</a><a href="{{ url_for('search', type=opp.type) }}" class="text-capitalize">{{ opp.type }}s</a></nav>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="panel">
+        <div class="cover detail-cover{{ ' has-photo' if cv.image or cv.official }}" style="--h: {{ cv.hue }}" data-cover data-wiki="{{ cv.wiki }}" data-site="{{ cv.site }}">
+          {{ cover_layers(cv, opp.country) }}
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <span class="chip chip-{{ opp.type }}">{{ opp.type }}</span>
+          {% if opp.funding_type != 'None' %}<span class="chip chip-funded">{{ opp.funding_type }} funding</span>{% endif %}
+          {% if left is not none and left < 0 %}<span class="chip chip-expired">Deadline passed</span>
+          {% elif left is not none and left <= 60 %}<span class="chip chip-closing">Closes in {{ left }} days</span>{% endif %}
+          {% if is_sample %}<span class="chip chip-sample">Sample entry</span>{% endif %}
+        </div>
+        <h1 class="h1 fs-2">{{ opp.title }}</h1>
+        <p class="text-muted fs-6">{{ opp.institution }}, {{ flag(opp.country) }}{{ opp.country }}</p>
+        <p>{{ desc }}</p>
+
+        <h2 class="h4 mt-4">Eligibility</h2>
+        <ul class="req">
+          <li><i class="bi bi-percent"></i><span>Minimum marks</span><b>{{ (opp.min_gpa_percent|int ~ '%') if opp.min_gpa_percent else 'Not stated' }}</b></li>
+          <li><i class="bi bi-translate"></i><span>English (IELTS)</span><b>{{ opp.min_english if opp.min_english else 'Not stated' }}</b></li>
+          <li><i class="bi bi-globe2"></i><span>Open to</span><b>{{ opp.eligible_countries or 'All nationalities' }}</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="panel filter-sticky">
+        <h2 class="h4 mb-3">Key facts</h2>
+        <ul class="facts mb-3">
+          <li><span>Degree</span><span>{{ opp.degree_level }}</span></li>
+          <li><span>Country</span><span>{{ flag(opp.country) }}{{ opp.country }}</span></li>
+          <li><span>Subject</span><span>{{ opp.subject }}</span></li>
+          <li><span>Funding</span><span>{{ opp.funding_type }}{% if opp.funding_amount %} ({{ opp.funding_amount|int }}/month){% endif %}</span></li>
+          <li><span>Deadline</span><span>{{ opp.deadline or 'Not given' }}</span></li>
+        </ul>
+        <a href="{{ opp.official_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-accent w-100 mb-2">Go to official website<i class="bi bi-box-arrow-up-right ms-2"></i></a>
+        <a href="{{ url_for('search', country=opp.country) }}" class="btn btn-outline-brand w-100 mb-2">More in {{ opp.country }}</a>
+        <p class="small text-muted mb-0 mt-3">This listing comes from a fixed dataset. Requirements and deadlines can change, so confirm them on the official website.</p>
+      </div>
+    </div>
+  </div>
+  <div class="cta-spacer d-lg-none"></div>
+</div>
+<div class="sticky-cta d-lg-none"><a href="{{ opp.official_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-accent w-100">Go to official website</a></div>
+{% endblock %}
